@@ -1,0 +1,24 @@
+{
+    "name": "pizepei/microservice-client",
+    "description": "微服务、客户端、microservice",
+    "keywords": ["basics","jurisdiction","role","account"],
+    "homepage": "https://org.heil.top/",
+    "authors": [
+        {
+            "name": "pizepei",
+            "email": "pizepei@pizepei.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "pizepei/helper": "dev-master",
+        "pizepei/encryption":"dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "pizepei\\microserviceClient\\": "src/"
+        }
+
+    }
+
+}
