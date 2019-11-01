@@ -24,17 +24,25 @@ class MicroClient
      */
     private $redis = [];
     /**
+     * 当前使用的服务
+     * @var string
+     */
+    private $action = '';
+    /**
      * 对应每一个app应用实例化一个对象
      * MicroClient constructor.
      * @param \Redis $redis
      * @param array $config
      */
-    public function __construct(\Redis $redis, array $config)
+    public function __construct(\Redis $redis, array $config,string $action)
     {
         # 基础配置
         $this->config = $config;
         # 缓存配置
         $this->redis = $redis;
+        # 当前使用的服务
+        $this->action = $action;
+
     }
     /**
      * @Author 皮泽培
@@ -46,17 +54,20 @@ class MicroClient
      * @title  路由标题
      * @explain 路由功能说明
      */
-    public static function init(\Redis $redis, array $config)
+    public static function init(\Redis $redis, array $config,string $action)
     {
-        if ($config ==[] || !isset($config['appid'])){
+        if ($config ==[] || !isset($config['CONFIG']['appid'])){
             throw new  \Exception('config error');
         }
+        if (!isset($config[$action])){
+            throw new  \Exception('action error');
+        }
         # 判断对应应用的客户端是否已经实例化
-        if (!isset(static::$clientObj[$config['appid']])){
-            static::$clientObj[$config['appid']] = new static($redis,$config);
+        if (!isset(static::$clientObj[$config['CONFIG']['appid']])){
+            static::$clientObj[$config['CONFIG']['appid']] = new static($redis,$config,$action);
         }
         # 返回实例化对象
-        return static::$clientObj[$config['appid']];
+        return static::$clientObj[$config['CONFIG']['appid']];
     }
 
     /**
@@ -67,12 +78,14 @@ class MicroClient
      */
     public function send($param)
     {
+        # 设置 configId
+        $param['configId'] = \Config::MICROSERVICE[$this->action]['configId']??'';
         # url
-        $url = $this->config['url'].$this->config['api'].$this->config['appid'].'.json';
+        $url = $this->config[$this->action]['url'].$this->config[$this->action]['api'].$this->config['CONFIG']['appid'].'.json';
         # 确定数据
-        $Prpcrypt = new  Prpcrypt($this->config['encodingAesKey']);
+        $Prpcrypt = new  Prpcrypt($this->config['CONFIG']['encodingAesKey']);
 
-        $data = $Prpcrypt->yieldCiphertext(Helper()->json_encode($param),$this->config['appid'],$this->config['token']);
+        $data = $Prpcrypt->yieldCiphertext(Helper()->json_encode($param),$this->config['CONFIG']['appid'],$this->config['CONFIG']['token']);
         $res = Helper()->httpRequest($url,Helper()->json_encode($data));
         if ($res['code'] !== 200){throw new \Exception('httpRequest error  '.$res['code']);}
         $body = Helper()->json_decode($res['body']);
