@@ -76,7 +76,7 @@ class MicroClient
         $res = Helper()->httpRequest($url,Helper()->json_encode($data));
         if ($res['code'] !== 200){throw new \Exception('httpRequest error  '.$res['code']);}
         $body = Helper()->json_decode($res['body']);
-        if (empty($body)){throw new \Exception('body empty ');}
+        if (empty($body)){throw new \Exception('body empty '.$res['body']);}
         # 处理一些特殊的错误码
         return $body;
     }
