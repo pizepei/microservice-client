@@ -34,14 +34,12 @@ class MicroClient
      * @param \Redis $redis
      * @param array $config
      */
-    public function __construct(\Redis $redis, array $config,string $action)
+    public function __construct(\Redis $redis, array $config)
     {
         # 基础配置
         $this->config = $config;
         # 缓存配置
         $this->redis = $redis;
-        # 当前使用的服务
-        $this->action = $action;
 
     }
     /**
@@ -49,22 +47,20 @@ class MicroClient
      * @Created 2019/10/21 11:06
      * @param \Redis $redis
      * @param array $config
+     * @param string $action  行为配置标识
      * @return MicroClient
      * @throws \Exception
      * @title  路由标题
      * @explain 路由功能说明
      */
-    public static function init(\Redis $redis, array $config,string $action)
+    public static function init(\Redis $redis, array $config)
     {
         if ($config ==[] || !isset($config['CONFIG']['appid'])){
             throw new  \Exception('config error');
         }
-        if (!isset($config[$action])){
-            throw new  \Exception('action error');
-        }
         # 判断对应应用的客户端是否已经实例化
         if (!isset(static::$clientObj[$config['CONFIG']['appid']])){
-            static::$clientObj[$config['CONFIG']['appid']] = new static($redis,$config,$action);
+            static::$clientObj[$config['CONFIG']['appid']] = new static($redis,$config);
         }
         # 返回实例化对象
         return static::$clientObj[$config['CONFIG']['appid']];
@@ -76,10 +72,12 @@ class MicroClient
      * @return array
      * @throws \Exception
      */
-    public function send($param)
+    public function send(array $param,string $action)
     {
+        # 当前使用的服务
+        $this->action = $action;
         # 设置 configId
-        $param['configId'] = \Config::MICROSERVICE[$this->action]['configId']??'';
+        $param['configId'] = $this->config[$this->action]['configId']??'';
         # url
         $url = $this->config[$this->action]['url'].$this->config[$this->action]['api'].$this->config['CONFIG']['appid'].'.json';
         # 确定数据
