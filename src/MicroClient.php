@@ -84,7 +84,7 @@ class MicroClient
         $Prpcrypt = new  Prpcrypt($this->config['CONFIG']['encodingAesKey']);
 
         $data = $Prpcrypt->yieldCiphertext(Helper()->json_encode($param),$this->config['CONFIG']['appid'],$this->config['CONFIG']['token']);
-        $res = Helper()->httpRequest($url,Helper()->json_encode($data));
+        $res = Helper()->httpRequest($url,Helper()->json_encode($data),empty($this->config['hostDomain'])?[]:['header'=>['Host:'.$this->config['hostDomain']]]);
         if ($res['code'] !== 200){throw new \Exception('httpRequest error  '.$res['code']);}
         $body = Helper()->json_decode($res['body']);
         if (empty($body)){throw new \Exception('body empty '.$res['body']);}
